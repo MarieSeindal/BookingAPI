@@ -1,3 +1,5 @@
+using BookingAPI;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors();
@@ -44,6 +46,14 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast")
+.WithOpenApi();
+
+app.MapGet("/today", () =>
+{
+    var today = new Today();
+    return today.dateToday();
+})
+.WithName("GetTodayDate")
 .WithOpenApi();
 
 app.Run();
