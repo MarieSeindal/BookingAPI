@@ -1,4 +1,6 @@
 ﻿
+using System.Globalization;
+
 namespace BookingAPI
 {
 
@@ -25,10 +27,11 @@ DateTime dateISO8602 = DateTime.ParseExact(iso8601String, "yyyyMMddTHH:mm:ssZ",
     }
     public class Today
     {
-        public System.DateTime dateToday()
+        public String dateToday()
         {
+            DateTimeFormatInfo cult = (new CultureInfo("da-DK")).DateTimeFormat;
             System.DateTime today = DateTime.Today;
-            return today;
+            return today.ToString("D", cult);
 
         }
         
