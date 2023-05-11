@@ -1,4 +1,6 @@
 using BookingAPI;
+using MySql.Data.MySqlClient;
+using System.Text.Json.Nodes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+const string connectionString = "server=aws.connect.psdb.cloud;user=aeelnb98ugixclyawi59;database=booking;port=3306;password=pscale_pw_GBAam9l0UgLuJdsWVQmri0vydFozUAb67Oxkw0XjWpj;SslMode=VerifyFull";
+MySqlConnection conn = new MySqlConnection(connectionString);
 
 
 // Configure the HTTP request pipeline.
@@ -35,6 +40,34 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () => // Minimal api <-- HUSK DET!!!
 {
+    /*
+    conn.Open();
+
+    string query = "select * from Persons";
+
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+    MySqlDataReader reader = cmd.ExecuteReader();
+
+    var returVal = new JsonObject();
+
+
+    while (reader.Read())
+    {
+        var test1 = reader["PersonID"].ToString();
+        var test2 = reader["LastName"].ToString();
+        var test3 = reader["FirstName"].ToString();
+
+        returVal.Add("id", test1);
+        returVal.Add("lName", test2);
+        returVal.Add("fname", test3);
+    }
+    conn.Close();
+
+
+    return "Hello :)";*/
+
+    //return (test1 + test2 + test3);
+    /**/
     var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
@@ -44,6 +77,7 @@ app.MapGet("/weatherforecast", () => // Minimal api <-- HUSK DET!!!
         ))
         .ToArray();
     return forecast;
+    
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();
