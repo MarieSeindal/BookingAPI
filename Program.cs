@@ -1,5 +1,6 @@
 using BookingAPI;
 using MySql.Data.MySqlClient;
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,15 +34,70 @@ app.UseCors(x =>
  .WithOrigins(
  new[] { "http://localhost:4200" }));
 
+// Minimal api <-- HUSK DET!!!
+
+app.MapPost("/user/{userId}", (int userId) => // Post a booking to a user
+{
+    /*
+    try
+    {
+        conn.Open();
+    }
+    catch (Exception)
+    {
+        string e = "Database error contact administrator";
+        Debug.WriteLine(e);
+    }
+    */
+
+    // Try making an insert statement
+
+
+
+}).WithName("PostUser").WithOpenApi();
+
+app.MapGet("/booking/{userId}", (int userId) => // Get all bookings for a user
+{
+    return "get all bookings";
+})
+.WithName("GetBookings") .WithOpenApi();
+
+
+app.MapPost("/booking/{userId}", (int userId) => // Post a booking to a user
+{
+
+}).WithName("PostBooking").WithOpenApi();
+
+
+app.MapGet("/booking/{bookId}", (int bookId) => // Get s bookings with id
+{
+    return "get all bookings";
+})
+.WithName("GetBooking").WithOpenApi();
+
+
+app.MapDelete("/booking{bookID}", (int bookId) => // Delete a booking with id
+{
+
+}).WithName("DeleteBooking").WithOpenApi();
+
+
+
+//--------------------------------------//
+// - - - - - Test calls below - - - - - //
+//--------------------------------------//
+
+app.MapGet("/users/{userId}/books/{bookId}", (int userId, int bookId) => 
+    $"The user id is {userId} and book id is {bookId}. Then you cna create and sql insert statement with these parameters {userId} and {bookId}"
+);
+
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/weatherforecast", () => // Minimal api <-- HUSK DET!!!
+app.MapGet("/weatherforecast", () => 
 {
-
-    /**/
     var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
@@ -51,9 +107,8 @@ app.MapGet("/weatherforecast", () => // Minimal api <-- HUSK DET!!!
         ))
         .ToArray();
     return forecast;
-    
 })
-.WithName("GetWeatherForecast")
+.WithName("GetWeatherForecast") 
 .WithOpenApi();
 
 app.MapGet("/person1", () => 
