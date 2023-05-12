@@ -40,33 +40,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () => // Minimal api <-- HUSK DET!!!
 {
-    /*
-    conn.Open();
 
-    string query = "select * from Persons";
-
-    MySqlCommand cmd = new MySqlCommand(query, conn);
-    MySqlDataReader reader = cmd.ExecuteReader();
-
-    var returVal = new JsonObject();
-
-
-    while (reader.Read())
-    {
-        var test1 = reader["PersonID"].ToString();
-        var test2 = reader["LastName"].ToString();
-        var test3 = reader["FirstName"].ToString();
-
-        returVal.Add("id", test1);
-        returVal.Add("lName", test2);
-        returVal.Add("fname", test3);
-    }
-    conn.Close();
-
-
-    return "Hello :)";*/
-
-    //return (test1 + test2 + test3);
     /**/
     var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
@@ -82,6 +56,37 @@ app.MapGet("/weatherforecast", () => // Minimal api <-- HUSK DET!!!
 .WithName("GetWeatherForecast")
 .WithOpenApi();
 
+app.MapGet("/person1", () => 
+{
+    conn.Open();
+
+    string query = "select * from Persons";
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+    MySqlDataReader reader = cmd.ExecuteReader();
+
+    var person = new Person();
+
+    while (reader.Read())
+    {
+        var test1 = reader["PersonID"];
+        var test2 = reader["LastName"];
+        var test3 = reader["FirstName"];
+
+        var castIDK = (int)test1;
+
+        person.Id = (int)test1;
+        person.LName = test2.ToString() ?? "No last name";
+        person.FName = test3.ToString() ?? "No first name";
+
+    }
+    conn.Close();
+
+    return (person);
+
+})
+.WithName("GetPerson1")
+.WithOpenApi();
+
 app.MapGet("/today", () =>
 {
     var today = new Today();
@@ -95,4 +100,18 @@ app.Run();
 internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+}
+
+public struct Person{
+    public Person(int id, string lName, string fName)
+    {
+        Id = id;
+        LName = lName;
+        FName = fName;
+    }
+
+    public int Id { get; set;}
+    public string LName { get; set;}
+    public string FName { get; set;}
+
 }
