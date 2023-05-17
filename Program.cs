@@ -38,7 +38,7 @@ app.UseCors(x =>
 
 app.MapPost("/user/{userId}", (int userId) => // Post a booking to a user
 {
-    /*
+    /**/
     try
     {
         conn.Open();
@@ -48,9 +48,29 @@ app.MapPost("/user/{userId}", (int userId) => // Post a booking to a user
         string e = "Database error contact administrator";
         Debug.WriteLine(e);
     }
-    */
+
+    string query = "select * from Persons";
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+    // cmd.CommandText = "$INSERT INTO Persons(PersonID, LastName,FirstName) VALUES('Audi',52642)";
+
 
     // Try making an insert statement
+
+
+    /*
+    cmd.CommandText = "DROP TABLE IF EXISTS cars";
+    cmd.ExecuteNonQuery();
+
+    cmd.CommandText = @"CREATE TABLE cars(id INTEGER PRIMARY KEY AUTO_INCREMENT,name TEXT, price INT)";
+    cmd.ExecuteNonQuery();
+
+    cmd.CommandText = "INSERT INTO cars(name, price) VALUES('Audi',52642)";
+    cmd.ExecuteNonQuery();
+
+    var test1 = reader["PersonID"];
+    var test2 = reader["LastName"];
+    var test3 = reader["FirstName"];
+    */
 
 
 
