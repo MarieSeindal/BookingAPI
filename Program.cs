@@ -1,7 +1,6 @@
 using BookingAPI;
 using MySql.Data.MySqlClient;
 using System.Diagnostics;
-using System.Text.Json.Nodes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +37,6 @@ app.UseCors(x =>
 
 app.MapPost("/user/{userId}", (int userId) => // Post a booking to a user
 {
-    /**/
     try
     {
         conn.Open();
@@ -49,10 +47,9 @@ app.MapPost("/user/{userId}", (int userId) => // Post a booking to a user
         Debug.WriteLine(e);
     }
 
-    string query = "select * from Persons";
-    MySqlCommand cmd = new MySqlCommand(query, conn);
-    // cmd.CommandText = "$INSERT INTO Persons(PersonID, LastName,FirstName) VALUES('Audi',52642)";
-
+    // string query = "$INSERT INTO Persons(PersonID, LastName,FirstName) VALUES('Audi',52642)";
+    // MySqlCommand cmd = new MySqlCommand(query, conn);
+    
 
     // Try making an insert statement
 
@@ -190,3 +187,5 @@ public struct Person{
     public string FName { get; set;}
 
 }
+
+
