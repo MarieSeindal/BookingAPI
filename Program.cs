@@ -1,6 +1,8 @@
 using BookingAPI;
 using MySql.Data.MySqlClient;
+using System;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +37,8 @@ app.UseCors(x =>
 
 // Minimal api <-- HUSK DET!!!
 
-app.MapPost("/user/{userId}", (int userId) => // Post a booking to a user
+// maybe? https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-7.0
+app.MapPost("/user/{userId}", async (int userId, HttpRequest request) => // Post a booking to a user
 {
     try
     {
@@ -47,12 +50,36 @@ app.MapPost("/user/{userId}", (int userId) => // Post a booking to a user
         Debug.WriteLine(e);
     }
 
-    // string query = "$INSERT INTO Persons(PersonID, LastName,FirstName) VALUES('Audi',52642)";
-    // MySqlCommand cmd = new MySqlCommand(query, conn);
-    
+    var person = await request.ReadFromJsonAsync<Person>();
+    // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
 
-    // Try making an insert statement
+    var lName = person.LName;
+    var fName = person.FName;
 
+
+    string query = $"INSERT INTO Persons(PersonID, LastName,FirstName) VALUES({userId}, '{lName}', '{person.FName}');";
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+    // var returnedFromDB = cmd.ExecuteScalar();
+    int id = 0;
+    try
+    {
+        var returnedFromDB = cmd.ExecuteScalar();
+        id = (int)returnedFromDB;
+
+    }
+    catch
+    {
+        Debug.WriteLine("Some error in db statement maybe?");
+    }
+
+
+    //MySqlCommand comm = conn.CreateCommand();
+    //comm.CommandText = query;
+    //int id = Convert.ToInt32(comm.ExecuteScalar());
+
+    // Check Error
+    if (id < 0)
+        Debug.WriteLine("Error inserting data into Database!");
 
     /*
     cmd.CommandText = "DROP TABLE IF EXISTS cars";
@@ -69,6 +96,7 @@ app.MapPost("/user/{userId}", (int userId) => // Post a booking to a user
     var test3 = reader["FirstName"];
     */
 
+    conn.Close();
 
 
 }).WithName("PostUser").WithOpenApi();
