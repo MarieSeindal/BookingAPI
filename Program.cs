@@ -40,64 +40,26 @@ app.UseCors(x =>
 // maybe? https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-7.0
 app.MapPost("/user/{userId}", async (int userId, HttpRequest request) => // Post a booking to a user
 {
-    try
-    {
-        conn.Open();
-    }
-    catch (Exception)
-    {
-        string e = "Database error contact administrator";
-        Debug.WriteLine(e);
-    }
-
-    var person = await request.ReadFromJsonAsync<Person>();
+    var person = await request.ReadFromJsonAsync<Person>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
     // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
 
     var lName = person.LName;
     var fName = person.FName;
 
+    try { conn.Open(); }
+    catch (Exception) {
+        string e = "Database error contact administrator";
+        Debug.WriteLine(e);
+    }
 
     string query = $"INSERT INTO Persons(PersonID, LastName,FirstName) VALUES({userId}, '{lName}', '{person.FName}');";
     MySqlCommand cmd = new MySqlCommand(query, conn);
-    // var returnedFromDB = cmd.ExecuteScalar();
-    int id = 0;
-    try
-    {
-        var returnedFromDB = cmd.ExecuteScalar();
-        id = (int)returnedFromDB;
 
-    }
-    catch
-    {
+    try { var returnedFromDB = cmd.ExecuteScalar();} 
+    catch {
         Debug.WriteLine("Some error in db statement maybe?");
     }
-
-
-    //MySqlCommand comm = conn.CreateCommand();
-    //comm.CommandText = query;
-    //int id = Convert.ToInt32(comm.ExecuteScalar());
-
-    // Check Error
-    if (id < 0)
-        Debug.WriteLine("Error inserting data into Database!");
-
-    /*
-    cmd.CommandText = "DROP TABLE IF EXISTS cars";
-    cmd.ExecuteNonQuery();
-
-    cmd.CommandText = @"CREATE TABLE cars(id INTEGER PRIMARY KEY AUTO_INCREMENT,name TEXT, price INT)";
-    cmd.ExecuteNonQuery();
-
-    cmd.CommandText = "INSERT INTO cars(name, price) VALUES('Audi',52642)";
-    cmd.ExecuteNonQuery();
-
-    var test1 = reader["PersonID"];
-    var test2 = reader["LastName"];
-    var test3 = reader["FirstName"];
-    */
-
     conn.Close();
-
 
 }).WithName("PostUser").WithOpenApi();
 
