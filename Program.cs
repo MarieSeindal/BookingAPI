@@ -1,5 +1,7 @@
 using BookingAPI;
+using Microsoft.AspNetCore.Builder;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Diagnostics;
 using System.Xml.Linq;
@@ -43,16 +45,13 @@ app.MapPost("/user/{userId}", async (int userId, HttpRequest request) => // Post
     var person = await request.ReadFromJsonAsync<Person>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
     // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
 
-    var lName = person.LName;
-    var fName = person.FName;
-
     try { conn.Open(); }
     catch (Exception) {
         string e = "Database error contact administrator";
         Debug.WriteLine(e);
     }
 
-    string query = $"INSERT INTO Persons(PersonID, LastName,FirstName) VALUES({userId}, '{lName}', '{person.FName}');";
+    string query = $"INSERT INTO Persons(PersonID, LastName,FirstName) VALUES({userId}, '{person.LName}', '{person.FName}');";
     MySqlCommand cmd = new MySqlCommand(query, conn);
 
     try { var returnedFromDB = cmd.ExecuteScalar();} 
@@ -63,22 +62,44 @@ app.MapPost("/user/{userId}", async (int userId, HttpRequest request) => // Post
 
 }).WithName("PostUser").WithOpenApi();
 
-app.MapGet("/booking/{userId}", (int userId) => // Get all bookings for a user
+app.MapGet("/booking/user/{userId}", (int userId) => // Get all bookings for a user
 {
     return "get all bookings";
 })
 .WithName("GetBookings") .WithOpenApi();
 
 
-app.MapPost("/booking/{userId}", (int userId) => // Post a booking to a user
+app.MapPost("/booking/{userId}", async (int userId, HttpRequest request) => // Post a booking to a user
 {
+    var booking = await request.ReadFromJsonAsync<Booking>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
+    // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
+
+    try { conn.Open(); }
+    catch (Exception)
+    {
+        string e = "Database error contact administrator";
+        Debug.WriteLine(e);
+    }
+
+    string query = $"INSERT INTO Bookings() VALUES('{booking.Id}');";
+    // MySqlCommand cmd = new MySqlCommand(query, conn);
+
+    try { //var returnedFromDB = cmd.ExecuteScalar(); 
+    }
+    catch
+    {
+        Debug.WriteLine("Some error in sql statement");
+    }
+    conn.Close();
 
 }).WithName("PostBooking").WithOpenApi();
 
 
 app.MapGet("/booking/{bookId}", (int bookId) => // Get s bookings with id
 {
-    return "get all bookings";
+    var booking = new Booking("Book1", "1", "T", DateTime.Now, true, 666, "Fun");
+    return booking;
+    //return "get a bookings";
 })
 .WithName("GetBooking").WithOpenApi();
 
@@ -122,11 +143,11 @@ app.MapGet("/person1", () =>
 {
     conn.Open();
 
-    string query = "select * from Persons";
+    string query = "select * from Persons where PersonID = 1";
     MySqlCommand cmd = new MySqlCommand(query, conn);
     MySqlDataReader reader = cmd.ExecuteReader();
 
-    var person = new Person();
+    var person = new Person(0,"","");
 
     while (reader.Read())
     {
@@ -163,19 +184,3 @@ internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
-
-public struct Person{
-    public Person(int id, string lName, string fName)
-    {
-        Id = id;
-        LName = lName;
-        FName = fName;
-    }
-
-    public int Id { get; set;}
-    public string LName { get; set;}
-    public string FName { get; set;}
-
-}
-
-
