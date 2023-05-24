@@ -52,7 +52,7 @@ app.MapPost("/user/{userId}", async (int userId, HttpRequest request) => // Post
         Console.WriteLine(e);
     }
 
-    string query = $"INSERT INTO Persons(PersonID, LastName,FirstName) VALUES({userId}, '{person.LName}', '{person.FName}');";
+    string query = $"INSERT INTO Persons(PersonID, LastName,FirstName) VALUES({userId}, '{person?.LName}', '{person?.FName}');";
     MySqlCommand cmd = new MySqlCommand(query, conn);
 
     try { var returnedFromDB = cmd.ExecuteScalar();} 
