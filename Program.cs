@@ -1,4 +1,5 @@
 using BookingAPI;
+using BookingAPI.Objects;
 using Microsoft.AspNetCore.Builder;
 using MySql.Data.MySqlClient;
 using Org.BouncyCastle.Asn1.Ocsp;
@@ -48,7 +49,7 @@ app.MapPost("/user/{userId}", async (int userId, HttpRequest request) => // Post
     try { conn.Open(); }
     catch (Exception) {
         string e = "Database error contact administrator";
-        Debug.WriteLine(e);
+        Console.WriteLine(e);
     }
 
     string query = $"INSERT INTO Persons(PersonID, LastName,FirstName) VALUES({userId}, '{person.LName}', '{person.FName}');";
@@ -56,17 +57,67 @@ app.MapPost("/user/{userId}", async (int userId, HttpRequest request) => // Post
 
     try { var returnedFromDB = cmd.ExecuteScalar();} 
     catch {
-        Debug.WriteLine("Some error in db statement maybe?");
+        Console.WriteLine("Some error in db statement maybe?");
     }
     conn.Close();
 
 }).WithName("PostUser").WithOpenApi();
 
+app.MapGet("/user/", () => // Get all users
+{
+    try { conn.Open(); }
+    catch (Exception)
+    {
+        string e = "Could not connect. Database error contact administrator";
+        Console.WriteLine(e);
+    }
+
+    string query = "SELECT * FROM Users;";
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+    List<User> users = new List<User>();
+
+    try
+    {
+        MySqlDataReader reader = cmd.ExecuteReader();
+
+
+        while (reader.Read())
+        {
+            var tempUser = new User("","","","",false);
+
+            tempUser.UserId = reader["UserID"].ToString() ?? "N/A";
+            tempUser.LastName = reader["LastName"].ToString() ?? "N/A";
+            tempUser.FirstName = reader["FirstName"].ToString() ?? "N/A";
+            tempUser.Password = reader["Password"].ToString() ?? "N/A";
+            tempUser.IsAdmin = (bool)reader["IsAdmin"]; // Booleans are saved as 0=false and nonZero=true
+
+            users.Add(tempUser);
+
+        }
+
+    }
+    catch
+    {
+        Console.WriteLine("Some error in sql statement");
+    }
+
+    try { conn.Close(); }
+    catch
+    {
+        string e = "Could not close. Database error contact administrator";
+        Console.WriteLine(e);
+    }
+
+    return users;
+
+
+}).WithName("GetUsers").WithOpenApi();
+
+
 app.MapGet("/booking/user/{userId}", (int userId) => // Get all bookings for a user
 {
     return "get all bookings";
-})
-.WithName("GetBookings") .WithOpenApi();
+}).WithName("GetBookings") .WithOpenApi();
 
 
 app.MapPost("/booking/{userId}", async (int userId, HttpRequest request) => // Post a booking to a user
@@ -77,8 +128,8 @@ app.MapPost("/booking/{userId}", async (int userId, HttpRequest request) => // P
     try { conn.Open(); }
     catch (Exception)
     {
-        string e = "Database error contact administrator";
-        Debug.WriteLine(e);
+        string e = "Could not connect. Database error contact administrator";
+        Console.WriteLine(e);
     }
 
     string query = $"INSERT INTO Bookings() VALUES('{booking.Id}');";
@@ -88,20 +139,25 @@ app.MapPost("/booking/{userId}", async (int userId, HttpRequest request) => // P
     }
     catch
     {
-        Debug.WriteLine("Some error in sql statement");
+        Console.WriteLine("Some error in sql statement");
     }
-    conn.Close();
+
+    try { conn.Close(); } catch
+    {
+        string e = "Could not close. Database error contact administrator";
+        Console.WriteLine(e);
+    }
+    
 
 }).WithName("PostBooking").WithOpenApi();
 
 
-app.MapGet("/booking/{bookId}", (int bookId) => // Get s bookings with id
+app.MapGet("/booking/{bookId}", (int bookId) => // Gets booking with id
 {
     var booking = new Booking("Book1", "1", "T", DateTime.Now, true, 666, "Fun");
     return booking;
     //return "get a bookings";
-})
-.WithName("GetBooking").WithOpenApi();
+}).WithName("GetBooking").WithOpenApi();
 
 
 app.MapDelete("/booking{bookID}", (int bookId) => // Delete a booking with id
