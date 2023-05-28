@@ -181,15 +181,11 @@ app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => /
 
     var startDate = booking?.StartDate.ToString("yyyy-MM-dd hh:mm:00");
     var endDate = booking?.EndDate.ToString("yyyy-MM-dd hh:mm:00");
-    var allDay = booking.AllDay ? 1: 0; // skipping safety check here without the '?'
+    var bookingId = Guid.NewGuid().ToString();
 
-    // insert into Bookings(BookingID, UserID, Title, StartDate, EndDate, AllDay, LocationID, Description) 
-    // values();
-
-    var test = booking?.StartDate;
 
     string insert = "INSERT INTO Bookings(BookingID, UserID, Title, StartDate, EndDate, AllDay, LocationID, Description) ";
-    string query = insert + $"VALUES('{booking?.Id}','{userId}','{booking?.Title}','{startDate}','{endDate}',{booking?.AllDay},'{booking?.RoomId}','{booking?.Description}');";
+    string query = insert + $"VALUES('{bookingId}','{userId}','{booking?.Title}','{startDate}','{endDate}',{booking?.AllDay},'{booking?.RoomId}','{booking?.Description}');";
     MySqlCommand cmd = new MySqlCommand(query, conn);
 
     try { var returnedFromDB = cmd.ExecuteScalar(); 
