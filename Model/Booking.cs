@@ -1,4 +1,4 @@
-﻿namespace BookingAPI.Objects
+﻿namespace BookingAPI.Model
 {
     public class Booking
     {

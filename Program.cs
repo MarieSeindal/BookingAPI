@@ -1,5 +1,5 @@
 using BookingAPI;
-using BookingAPI.Objects;
+using BookingAPI.Model;
 using Microsoft.AspNetCore.Builder;
 using MySql.Data.MySqlClient;
 using Org.BouncyCastle.Asn1.Ocsp;
@@ -41,35 +41,37 @@ app.UseCors(x =>
 // Minimal api <-- HUSK DET!!!
 
 // maybe? https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-7.0
-app.MapPost("/user/{userId}", async (int userId, HttpRequest request) => // Post a booking to a user
+app.MapPost("/user", async (HttpRequest request) => // Add user
 {
-    var person = await request.ReadFromJsonAsync<Person>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
+    var person = await request.ReadFromJsonAsync<User>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
     // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
 
     try { conn.Open(); }
     catch (Exception) {
         string e = "Database error contact administrator";
-        Console.WriteLine(e);
+        Debug.WriteLine(e);
     }
 
-    string query = $"INSERT INTO Persons(PersonID, LastName,FirstName) VALUES({userId}, '{person?.LName}', '{person?.FName}');";
+    var userId = Guid.NewGuid().ToString();
+
+    string query = $"INSERT INTO Users(UserID, LastName, FirstName, Password, IsAdmin) VALUES('{userId}', '{person?.LastName}', '{person?.FirstName}', MD5('{person?.Password}'), {person?.IsAdmin});";
     MySqlCommand cmd = new MySqlCommand(query, conn);
 
     try { var returnedFromDB = cmd.ExecuteScalar();} 
     catch {
-        Console.WriteLine("Some error in db statement maybe?");
+        Debug.WriteLine("Some error in db statement maybe?");
     }
     conn.Close();
 
 }).WithName("PostUser").WithOpenApi();
 
-app.MapGet("/user/", () => // Get all users
+app.MapGet("/user", () => // Get all users
 {
     try { conn.Open(); }
     catch (Exception)
     {
         string e = "Could not connect. Database error contact administrator";
-        Console.WriteLine(e);
+        Debug.WriteLine(e);
     }
 
     string query = "SELECT * FROM Users;";
@@ -98,20 +100,65 @@ app.MapGet("/user/", () => // Get all users
     }
     catch
     {
-        Console.WriteLine("Some error in sql statement");
+        Debug.WriteLine("Some error in sql statement");
     }
 
     try { conn.Close(); }
     catch
     {
         string e = "Could not close. Database error contact administrator";
-        Console.WriteLine(e);
+        Debug.WriteLine(e);
     }
 
     return users;
 
 
 }).WithName("GetUsers").WithOpenApi();
+
+
+app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for a user
+{
+    try { conn.Open(); }
+    catch (Exception)
+    {
+        string e = "Could not connect. Database error contact administrator";
+        Debug.WriteLine(e);
+    }
+
+    string query = $"SELECT IsAdmin FROM Users where UserID = '{userId}';";
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+    List<User> users = new List<User>();
+
+    var adminAccess = false;
+
+    try
+    {
+        MySqlDataReader reader = cmd.ExecuteReader();
+
+
+
+        while (reader.Read())
+        {
+
+            adminAccess = (bool)reader["IsAdmin"]; // Booleans are saved as 0=false and nonZero=true
+
+        }
+
+    }
+    catch
+    {
+        Debug.WriteLine("Some error in sql statement");
+    }
+
+    try { conn.Close(); }
+    catch
+    {
+        string e = "Could not close. Database error contact administrator";
+        Debug.WriteLine(e);
+    }
+
+    return adminAccess;
+}).WithName("GetUserPermission").WithOpenApi();
 
 
 app.MapGet("/booking/user/{userId}", (int userId) => // Get all bookings for a user
@@ -129,23 +176,23 @@ app.MapPost("/booking/{userId}", async (int userId, HttpRequest request) => // P
     catch (Exception)
     {
         string e = "Could not connect. Database error contact administrator";
-        Console.WriteLine(e);
+        Debug.WriteLine(e);
     }
 
-    string query = $"INSERT INTO Bookings() VALUES('{booking.Id}');";
+    string query = $"INSERT INTO Bookings() VALUES('{booking?.Id}');";
     // MySqlCommand cmd = new MySqlCommand(query, conn);
 
     try { //var returnedFromDB = cmd.ExecuteScalar(); 
     }
     catch
     {
-        Console.WriteLine("Some error in sql statement");
+        Debug.WriteLine("Some error in sql statement");
     }
 
     try { conn.Close(); } catch
     {
         string e = "Could not close. Database error contact administrator";
-        Console.WriteLine(e);
+        Debug.WriteLine(e);
     }
     
 
