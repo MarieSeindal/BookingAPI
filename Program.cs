@@ -167,7 +167,7 @@ app.MapGet("/booking/user/{userId}", (int userId) => // Get all bookings for a u
 }).WithName("GetBookings") .WithOpenApi();
 
 
-app.MapPost("/booking/{userId}", async (int userId, HttpRequest request) => // Post a booking to a user
+app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => // Post a booking to a user
 {
     var booking = await request.ReadFromJsonAsync<Booking>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
     // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
@@ -179,10 +179,20 @@ app.MapPost("/booking/{userId}", async (int userId, HttpRequest request) => // P
         Debug.WriteLine(e);
     }
 
-    string query = $"INSERT INTO Bookings() VALUES('{booking?.Id}');";
-    // MySqlCommand cmd = new MySqlCommand(query, conn);
+    var startDate = booking?.StartDate.ToString("yyyy-MM-dd hh:mm:00");
+    var endDate = booking?.EndDate.ToString("yyyy-MM-dd hh:mm:00");
+    var allDay = booking.AllDay ? 1: 0; // skipping safety check here without the '?'
 
-    try { //var returnedFromDB = cmd.ExecuteScalar(); 
+    // insert into Bookings(BookingID, UserID, Title, StartDate, EndDate, AllDay, LocationID, Description) 
+    // values();
+
+    var test = booking?.StartDate;
+
+    string insert = "INSERT INTO Bookings(BookingID, UserID, Title, StartDate, EndDate, AllDay, LocationID, Description) ";
+    string query = insert + $"VALUES('{booking?.Id}','{userId}','{booking?.Title}','{startDate}','{endDate}',{booking?.AllDay},'{booking?.RoomId}','{booking?.Description}');";
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+    try { var returnedFromDB = cmd.ExecuteScalar(); 
     }
     catch
     {
@@ -201,7 +211,7 @@ app.MapPost("/booking/{userId}", async (int userId, HttpRequest request) => // P
 
 app.MapGet("/booking/{bookId}", (int bookId) => // Gets booking with id
 {
-    var booking = new Booking("Book1", "1", "T", DateTime.Now, true, 666, "Fun");
+    var booking = new Booking("Book1", "1", "T", DateTime.UtcNow, DateTime.Now, true, 666, "Fun");
     return booking;
     //return "get a bookings";
 }).WithName("GetBooking").WithOpenApi();
