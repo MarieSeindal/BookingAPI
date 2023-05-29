@@ -122,7 +122,6 @@ app.MapGet("/user", () => // Get all users
 
 }).WithName("GetUsers").WithOpenApi();
 
-
 app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for a user
 {
     try { conn.Open(); }
@@ -134,7 +133,6 @@ app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for 
 
     string query = $"SELECT IsAdmin FROM Users where UserID = '{userId}';";
     MySqlCommand cmd = new MySqlCommand(query, conn);
-    List<User> users = new List<User>();
 
     var adminAccess = false;
 
@@ -171,9 +169,58 @@ app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for 
 
 #region Booking Serivce
 
-app.MapGet("/booking/user/{userId}", (int userId) => // Get all bookings for a user
+app.MapGet("/bookings/{userId}", (string userId) => // Get all bookings for a user
 {
-    return "get all bookings";
+    try { conn.Open(); }
+    catch (Exception)
+    {
+        string e = "Could not connect. Database error contact administrator";
+        Debug.WriteLine(e);
+    }
+
+    string query = $"SELECT * FROM Bookings where UserID = '{userId}';";
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+    List<Booking> bookings = new List<Booking>();
+
+    try
+    {
+        MySqlDataReader reader = cmd.ExecuteReader();
+
+
+
+        while (reader.Read())
+        {
+
+            var tempBooking = new Booking("", "", "", DateTime.Now, DateTime.Now, false, 0, ""); // just temp data
+
+            tempBooking.Id = reader["BookingID"].ToString() ?? "N/A";
+            tempBooking.UserId = reader["UserID"].ToString() ?? "N/A";
+            tempBooking.Title = reader["Title"].ToString() ?? "";
+            tempBooking.StartDate = (DateTime)reader["StartDate"];
+            tempBooking.EndDate = (DateTime)reader["EndDate"];
+            tempBooking.AllDay = (bool)reader["AllDay"]; // Booleans are saved as 0=false and nonZero=true
+            tempBooking.RoomId = (int)reader["LocationID"];
+            tempBooking.Description = reader["Description"].ToString() ?? "";
+
+            bookings.Add(tempBooking);
+
+        }
+
+    }
+    catch
+    {
+        Debug.WriteLine("Some error in sql statement");
+    }
+
+    try { conn.Close(); }
+    catch
+    {
+        string e = "Could not close. Database error contact administrator";
+        Debug.WriteLine(e);
+    }
+
+    return bookings;
+
 }).WithName("GetBookings") .WithOpenApi();
 
 
