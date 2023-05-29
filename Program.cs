@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Net;
 using System.Xml.Linq;
 
-#region Initial code
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,9 +44,7 @@ app.UseCors(x =>
 
 // maybe? https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-7.0
 
-#endregion
 
-#region User Service
 app.MapPost("/user", async (HttpRequest request) => // Add user
 {
     var person = await request.ReadFromJsonAsync<User>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
@@ -68,8 +65,13 @@ app.MapPost("/user", async (HttpRequest request) => // Add user
     catch {
         Debug.WriteLine("Some error in db statement maybe?");
     }
-    conn.Close();
 
+    try { conn.Close(); }
+    catch
+    {
+        string e = "Could not close. Database error contact administrator";
+        Debug.WriteLine(e);
+    }
 }).WithName("PostUser").WithOpenApi();
 
 app.MapGet("/user", () => // Get all users
@@ -144,8 +146,13 @@ app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for 
 
         while (reader.Read())
         {
+            var temp = reader["IsAdmin"]; // Booleans are saved as 0=false and nonZero=true
 
-            adminAccess = (bool)reader["IsAdmin"]; // Booleans are saved as 0=false and nonZero=true
+            switch (temp)
+            {
+                case true: adminAccess = true; break;
+                case false: adminAccess = false; break;
+            }
 
         }
 
@@ -165,9 +172,7 @@ app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for 
     return adminAccess;
 }).WithName("GetUserPermission").WithOpenApi();
 
-#endregion
 
-#region Booking Serivce
 
 app.MapGet("/bookings/{userId}", (string userId) => // Get all bookings for a user
 {
@@ -278,9 +283,7 @@ app.MapDelete("/booking{bookID}", (int bookId) => // Delete a booking with id
 
 }).WithName("DeleteBooking").WithOpenApi();
 
-#endregion
 
-#region Devellopment Testing
 
 //--------------------------------------//
 // - - - - - Test calls below - - - - - //
@@ -349,7 +352,6 @@ app.MapGet("/today", () =>
 .WithName("GetTodayDate")
 .WithOpenApi();
 
-#endregion
 
 app.Run();
 
