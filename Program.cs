@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Net;
 using System.Xml.Linq;
 
+#region Initial code
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors();
@@ -42,6 +44,10 @@ app.UseCors(x =>
 // Minimal api <-- HUSK DET!!!
 
 // maybe? https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-7.0
+
+#endregion
+
+#region User Service
 app.MapPost("/user", async (HttpRequest request) => // Add user
 {
     var person = await request.ReadFromJsonAsync<User>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
@@ -161,6 +167,9 @@ app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for 
     return adminAccess;
 }).WithName("GetUserPermission").WithOpenApi();
 
+#endregion
+
+#region Booking Serivce
 
 app.MapGet("/booking/user/{userId}", (int userId) => // Get all bookings for a user
 {
@@ -222,7 +231,9 @@ app.MapDelete("/booking{bookID}", (int bookId) => // Delete a booking with id
 
 }).WithName("DeleteBooking").WithOpenApi();
 
+#endregion
 
+#region Devellopment Testing
 
 //--------------------------------------//
 // - - - - - Test calls below - - - - - //
@@ -290,6 +301,8 @@ app.MapGet("/today", () =>
 })
 .WithName("GetTodayDate")
 .WithOpenApi();
+
+#endregion
 
 app.Run();
 
