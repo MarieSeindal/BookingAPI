@@ -5,6 +5,7 @@ using MySql.Data.MySqlClient;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Xml.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -179,8 +180,9 @@ app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => /
         Debug.WriteLine(e);
     }
 
-    var startDate = booking?.StartDate.ToString("yyyy-MM-dd hh:mm:00");
-    var endDate = booking?.EndDate.ToString("yyyy-MM-dd hh:mm:00");
+
+    var startDate = booking?.StartDate.ToString("yyyy-MM-dd HH:mm:00");
+    var endDate = booking?.EndDate.ToString("yyyy-MM-dd HH:mm:00");
     var bookingId = Guid.NewGuid().ToString();
 
 
@@ -188,7 +190,9 @@ app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => /
     string query = insert + $"VALUES('{bookingId}','{userId}','{booking?.Title}','{startDate}','{endDate}',{booking?.AllDay},'{booking?.RoomId}','{booking?.Description}');";
     MySqlCommand cmd = new MySqlCommand(query, conn);
 
-    try { var returnedFromDB = cmd.ExecuteScalar(); 
+    try
+    { 
+        var returnedFromDB = cmd.ExecuteScalar();
     }
     catch
     {
@@ -200,7 +204,7 @@ app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => /
         string e = "Could not close. Database error contact administrator";
         Debug.WriteLine(e);
     }
-    
+
 
 }).WithName("PostBooking").WithOpenApi();
 
