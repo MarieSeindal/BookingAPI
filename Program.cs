@@ -1,6 +1,8 @@
+using Azure.Core;
 using BookingAPI;
 using BookingAPI.Model;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.HttpResults;
 using MySql.Data.MySqlClient;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
@@ -58,7 +60,8 @@ app.MapPost("/user", async (HttpRequest request) => // Add user
 
     var userId = Guid.NewGuid().ToString();
 
-    string query = $"INSERT INTO Users(UserID, LastName, FirstName, Password, IsAdmin) VALUES('{userId}', '{user?.LastName}', '{user?.FirstName}', MD5('{user?.Password}'), {user?.IsAdmin});";
+    string insert = "INSERT INTO Users(UserID, LastName, FirstName, Password, IsAdmin) ";
+    string query = insert + $"VALUES('{userId}', '{user?.LastName}', '{user?.FirstName}', MD5('{user?.Password}'), {user?.IsAdmin});";
     MySqlCommand cmd = new MySqlCommand(query, conn);
 
     try { var returnedFromDB = cmd.ExecuteScalar();} 
@@ -72,6 +75,9 @@ app.MapPost("/user", async (HttpRequest request) => // Add user
         string e = "Could not close. Database error contact administrator";
         Debug.WriteLine(e);
     }
+
+    // return Results.Ok("User created"); // !!!!!!!!!!!!!!!!!!!!!!!!! Skal pakke sind logik om det lykkedes eller ej
+
 }).WithName("PostUser").WithOpenApi();
 
 app.MapGet("/user", () => // Get all users
@@ -118,6 +124,7 @@ app.MapGet("/user", () => // Get all users
 
 
 }).WithName("GetUsers").WithOpenApi();
+
 
 app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for a user
 {
@@ -253,7 +260,7 @@ app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => /
 }).WithName("PostBooking").WithOpenApi();
 
 
-app.MapGet("/booking/{bookId}", (int bookId) => // Gets booking with id
+app.MapGet("/booking/{bookId}", (int bookId) => // Gets booking with id NOT IN USE 
 {
     var booking = new Booking("Book1", "1", "T", DateTime.UtcNow, DateTime.Now, true, 666, "Fun");
     return booking;
@@ -261,10 +268,71 @@ app.MapGet("/booking/{bookId}", (int bookId) => // Gets booking with id
 }).WithName("GetBooking").WithOpenApi();
 
 
-app.MapDelete("/booking{bookID}", (int bookId) => // Delete a booking with id
+app.MapDelete("/booking/{bookID}", (string bookId) => // Delete a booking with id
 {
 
+    connectToDB();
+
+    string query = $"DELETE from Bookings WHERE BookingID ='{bookId}';";
+
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+    try
+    {
+        var returnedFromDB = cmd.ExecuteScalar();
+    }
+    catch
+    {
+        Debug.WriteLine("Some error in sql statement");
+    }
+
+    try { conn.Close(); }
+    catch
+    {
+        string e = "Could not close. Database error contact administrator";
+        Debug.WriteLine(e);
+    }
+
 }).WithName("DeleteBooking").WithOpenApi();
+
+app.MapPut("/booking/{bookingId}", async (string bookingId, HttpRequest request) => // Post a booking to a user
+{
+    var b = await request.ReadFromJsonAsync<Booking>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
+    // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
+
+    connectToDB();
+
+
+    var startDate = b?.StartDate.ToString("yyyy-MM-dd HH:mm:00");
+    var endDate = b?.EndDate.ToString("yyyy-MM-dd HH:mm:00");
+
+    string command = "UPDATE Users ";
+    string updatedvalues = $"SET UserID = '{b.UserId}', Title = '{b.Title}', StartDate = '{startDate}', EndDate = '{endDate}', AllDay = '{b.AllDay}', LocationID = '{b.RoomId}', Description = '{b.Description}' ";
+    string condition = $"WHERE UserID = '';";
+    string query = command+updatedvalues+condition;
+
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+    try
+    {
+        var returnedFromDB = cmd.ExecuteScalar();
+    }
+    catch
+    {
+        Debug.WriteLine("Some error in sql statement");
+    }
+
+    try { conn.Close(); }
+    catch
+    {
+        string e = "Could not close. Database error contact administrator";
+        Debug.WriteLine(e);
+    }
+
+
+}).WithName("UpdateBooking").WithOpenApi();
+
+
 
 
 #region Random devellopment test
@@ -349,13 +417,14 @@ void connectToDB()
         try
         {
             conn.Open();
+            Debug.WriteLine("Connected");
             canConnect = true;
         }
         catch (Exception)
         {
+            Debug.WriteLine("Could not connect");
             Thread.Sleep(500);
-            string e = "Could not connect. Database error contact administrator";
-            Debug.WriteLine(e);
+            Debug.WriteLine("Retrying...");
         }
     }
 }
