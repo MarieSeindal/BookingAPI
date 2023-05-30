@@ -17,7 +17,6 @@ builder.Services.AddCors();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-// builder.Services.AddDbContext<DatabaseContext>( options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
@@ -52,28 +51,14 @@ app.UseCors(x =>
 
 app.MapPost("/user", async (HttpRequest request) => // Add user
 {
-    var person = await request.ReadFromJsonAsync<User>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
+    var user = await request.ReadFromJsonAsync<User>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
     // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
 
-    bool canConnect = false;
-    while (!canConnect)
-    {
-        try
-        {
-            conn.Open();
-            canConnect = true;
-        }
-        catch (Exception)
-        {
-            Thread.Sleep(500);
-            string e = "Could not connect. Database error contact administrator";
-            Debug.WriteLine(e);
-        }
-    }
+    connectToDB();
 
     var userId = Guid.NewGuid().ToString();
 
-    string query = $"INSERT INTO Users(UserID, LastName, FirstName, Password, IsAdmin) VALUES('{userId}', '{person?.LastName}', '{person?.FirstName}', MD5('{person?.Password}'), {person?.IsAdmin});";
+    string query = $"INSERT INTO Users(UserID, LastName, FirstName, Password, IsAdmin) VALUES('{userId}', '{user?.LastName}', '{user?.FirstName}', MD5('{user?.Password}'), {user?.IsAdmin});";
     MySqlCommand cmd = new MySqlCommand(query, conn);
 
     try { var returnedFromDB = cmd.ExecuteScalar();} 
@@ -91,21 +76,7 @@ app.MapPost("/user", async (HttpRequest request) => // Add user
 
 app.MapGet("/user", () => // Get all users
 {
-    bool canConnect = false;
-    while (!canConnect)
-    {
-        try
-        {
-            conn.Open();
-            canConnect = true;
-        }
-        catch (Exception)
-        {
-            Thread.Sleep(500);
-            string e = "Could not connect. Database error contact administrator";
-            Debug.WriteLine(e);
-        }
-    }
+    connectToDB();
 
     string query = "SELECT * FROM Users;";
     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -150,21 +121,8 @@ app.MapGet("/user", () => // Get all users
 
 app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for a user
 {
-    bool canConnect = false;
-    while (!canConnect)
-    {
-        try
-        {
-            conn.Open();
-            canConnect = true;
-        }
-        catch (Exception)
-        {
-            Thread.Sleep(500);
-            string e = "Could not connect. Database error contact administrator";
-            Debug.WriteLine(e);
-        }
-    }
+    connectToDB();
+
 
     string query = $"SELECT IsAdmin FROM Users where UserID = '{userId}';";
     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -209,21 +167,8 @@ app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for 
 
 app.MapGet("/bookings/{userId}", (string userId) => // Get all bookings for a user
 {
-    bool canConnect = false;
-    while (!canConnect)
-    {
-        try
-        {
-            conn.Open();
-            canConnect = true;
-        }
-        catch (Exception)
-        {
-            Thread.Sleep(500);
-            string e = "Could not connect. Database error contact administrator";
-            Debug.WriteLine(e);
-        }
-    }
+    connectToDB();
+
 
 
     string query = $"SELECT * FROM Bookings where UserID = '{userId}';";
@@ -277,21 +222,8 @@ app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => /
     var booking = await request.ReadFromJsonAsync<Booking>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
     // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
 
-    bool canConnect = false;
-    while (!canConnect)
-    {
-        try
-        {
-            conn.Open();
-            canConnect = true;
-        }
-        catch (Exception)
-        {
-            Thread.Sleep(500);
-            string e = "Could not connect. Database error contact administrator";
-            Debug.WriteLine(e);
-        }
-    }
+    connectToDB();
+
 
     var startDate = booking?.StartDate.ToString("yyyy-MM-dd HH:mm:00");
     var endDate = booking?.EndDate.ToString("yyyy-MM-dd HH:mm:00");
@@ -407,6 +339,26 @@ app.MapGet("/today", () =>
 #endregion
 
 app.Run();
+
+
+void connectToDB()
+{
+    bool canConnect = false;
+    while (!canConnect)
+    {
+        try
+        {
+            conn.Open();
+            canConnect = true;
+        }
+        catch (Exception)
+        {
+            Thread.Sleep(500);
+            string e = "Could not connect. Database error contact administrator";
+            Debug.WriteLine(e);
+        }
+    }
+}
 
 internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
