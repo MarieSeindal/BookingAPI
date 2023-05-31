@@ -256,7 +256,6 @@ app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => /
         Debug.WriteLine(e);
     }
 
-
 }).WithName("PostBooking").WithOpenApi();
 
 
