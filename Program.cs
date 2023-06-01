@@ -22,7 +22,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-const string connectionString = "server=aws.connect.psdb.cloud;user=aeelnb98ugixclyawi59;database=booking;port=3306;password=pscale_pw_GBAam9l0UgLuJdsWVQmri0vydFozUAb67Oxkw0XjWpj;SslMode=VerifyFull";
+
+const string connectionString = "Server=aws.connect.psdb.cloud;Database=booking;user=4bybcv1yrknj1xi9ycz1;password=pscale_pw_wkMqPf5peopnBjUNgGoa3vXV56yNtLO1g0nSbULLJfm;SslMode=VerifyFull;";
 MySqlConnection conn = new MySqlConnection(connectionString);
 
 
@@ -411,10 +412,12 @@ app.Run();
 void connectToDB()
 {
     bool canConnect = false;
-    while (!canConnect)
+    var stopCounter = 50;
+    while (!canConnect && stopCounter > 0)
     {
         try
         {
+            stopCounter--;
             conn.Open();
             Debug.WriteLine("Connected");
             canConnect = true;
@@ -426,6 +429,7 @@ void connectToDB()
             Debug.WriteLine("Retrying...");
         }
     }
+    var exits = " ";
 }
 
 internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
