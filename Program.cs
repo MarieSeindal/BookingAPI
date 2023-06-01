@@ -305,9 +305,9 @@ app.MapPut("/booking/{bookingId}", async (string bookingId, HttpRequest request)
     var startDate = b?.StartDate.ToString("yyyy-MM-dd HH:mm:00");
     var endDate = b?.EndDate.ToString("yyyy-MM-dd HH:mm:00");
 
-    string command = "UPDATE Users ";
-    string updatedvalues = $"SET UserID = '{b.UserId}', Title = '{b.Title}', StartDate = '{startDate}', EndDate = '{endDate}', AllDay = '{b.AllDay}', LocationID = '{b.RoomId}', Description = '{b.Description}' ";
-    string condition = $"WHERE UserID = '';";
+    string command = "UPDATE Bookings ";
+    string updatedvalues = $"SET Title = '{b?.Title}', StartDate = '{startDate}', EndDate = '{endDate}', AllDay = {b?.AllDay}, LocationID = {b?.RoomId}, Description = '{b?.Description}' ";
+    string condition = $"WHERE BookingID = '{bookingId}';";
     string query = command+updatedvalues+condition;
 
     MySqlCommand cmd = new MySqlCommand(query, conn);
