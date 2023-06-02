@@ -432,11 +432,20 @@ void connectToDB()
 
 string getConnectionString()
 {
-    StreamReader r = new StreamReader(@"./Connection.txt");
+    try
+    {
+        StreamReader r = new StreamReader(@"./Connection.txt");
 
-    string connString = r.ReadLine();
+        string connString = r.ReadLine();
 
-    return connString;
+        return connString;
+    } catch
+    {
+        Debug.WriteLine("Error in connections tring to db. Potentially missing the file?");
+    }
+
+    return "NO CONNECTION STRING";
+
 }
 
 internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
