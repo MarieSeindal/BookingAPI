@@ -22,9 +22,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-
-const string connectionString = "Server=aws.connect.psdb.cloud;Database=booking;user=4bybcv1yrknj1xi9ycz1;password=pscale_pw_wkMqPf5peopnBjUNgGoa3vXV56yNtLO1g0nSbULLJfm;SslMode=VerifyFull;";
-MySqlConnection conn = new MySqlConnection(connectionString);
+MySqlConnection conn = new MySqlConnection(getConnectionString());
 
 
 // Configure the HTTP request pipeline.
@@ -430,6 +428,15 @@ void connectToDB()
         }
     }
     var exits = " ";
+}
+
+string getConnectionString()
+{
+    StreamReader r = new StreamReader(@"./Connection.txt");
+
+    string connString = r.ReadLine();
+
+    return connString;
 }
 
 internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
