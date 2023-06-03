@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Xml.Linq;
 
+#region Initial code
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +50,9 @@ app.UseCors(x =>
 // app.MapGet("/bookings", async (DatabaseContext context) => await context.Bookings.ToListAsync());
 // app.MapGet("/", () => "Welcome to minimal APIs");
 
+#endregion
+
+#region User Service
 
 app.MapPost("/user", async (HttpRequest request) => // Add user
 {
@@ -169,9 +173,45 @@ app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for 
     return adminAccess;
 }).WithName("GetUserPermission").WithOpenApi();
 
+#endregion
+
+#region Booking Service
+
+app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => // Post a booking to a user
+{
+    var booking = await request.ReadFromJsonAsync<Booking>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
+    // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
+
+    connectToDB();
 
 
-app.MapGet("/bookings/{userId}", (string userId) => // Get all bookings for a user
+    var startDate = booking?.StartDate.ToString("yyyy-MM-dd HH:mm:00");
+    var endDate = booking?.EndDate.ToString("yyyy-MM-dd HH:mm:00");
+    var bookingId = Guid.NewGuid().ToString();
+
+
+    string insert = "INSERT INTO Bookings(BookingID, UserID, Title, StartDate, EndDate, AllDay, LocationID, Description) ";
+    string query = insert + $"VALUES('{bookingId}','{userId}','{booking?.Title}','{startDate}','{endDate}',{booking?.AllDay},'{booking?.RoomId}','{booking?.Description}');";
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+    try
+    { 
+        var returnedFromDB = cmd.ExecuteScalar();
+    }
+    catch
+    {
+        Debug.WriteLine("Some error in sql statement");
+    }
+
+    try { conn.Close(); } catch
+    {
+        string e = "Could not close. Database error contact administrator";
+        Debug.WriteLine(e);
+    }
+
+}).WithName("PostBooking").WithOpenApi();
+
+app.MapGet("/booking/{userId}", (string userId) => // Get all bookings for a user
 {
     connectToDB();
 
@@ -222,77 +262,6 @@ app.MapGet("/bookings/{userId}", (string userId) => // Get all bookings for a us
 
 }).WithName("GetBookings") .WithOpenApi();
 
-
-app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => // Post a booking to a user
-{
-    var booking = await request.ReadFromJsonAsync<Booking>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
-    // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
-
-    connectToDB();
-
-
-    var startDate = booking?.StartDate.ToString("yyyy-MM-dd HH:mm:00");
-    var endDate = booking?.EndDate.ToString("yyyy-MM-dd HH:mm:00");
-    var bookingId = Guid.NewGuid().ToString();
-
-
-    string insert = "INSERT INTO Bookings(BookingID, UserID, Title, StartDate, EndDate, AllDay, LocationID, Description) ";
-    string query = insert + $"VALUES('{bookingId}','{userId}','{booking?.Title}','{startDate}','{endDate}',{booking?.AllDay},'{booking?.RoomId}','{booking?.Description}');";
-    MySqlCommand cmd = new MySqlCommand(query, conn);
-
-    try
-    { 
-        var returnedFromDB = cmd.ExecuteScalar();
-    }
-    catch
-    {
-        Debug.WriteLine("Some error in sql statement");
-    }
-
-    try { conn.Close(); } catch
-    {
-        string e = "Could not close. Database error contact administrator";
-        Debug.WriteLine(e);
-    }
-
-}).WithName("PostBooking").WithOpenApi();
-
-
-app.MapGet("/booking/{bookId}", (int bookId) => // Gets booking with id NOT IN USE 
-{
-    var booking = new Booking("Book1", "1", "T", DateTime.UtcNow, DateTime.Now, true, 666, "Fun");
-    return booking;
-    //return "get a bookings";
-}).WithName("GetBooking").WithOpenApi();
-
-
-app.MapDelete("/booking/{bookID}", (string bookId) => // Delete a booking with id
-{
-
-    connectToDB();
-
-    string query = $"DELETE from Bookings WHERE BookingID ='{bookId}';";
-
-    MySqlCommand cmd = new MySqlCommand(query, conn);
-
-    try
-    {
-        var returnedFromDB = cmd.ExecuteScalar();
-    }
-    catch
-    {
-        Debug.WriteLine("Some error in sql statement");
-    }
-
-    try { conn.Close(); }
-    catch
-    {
-        string e = "Could not close. Database error contact administrator";
-        Debug.WriteLine(e);
-    }
-
-}).WithName("DeleteBooking").WithOpenApi();
-
 app.MapPut("/booking/{bookingId}", async (string bookingId, HttpRequest request) => // Post a booking to a user
 {
     var b = await request.ReadFromJsonAsync<Booking>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
@@ -330,10 +299,39 @@ app.MapPut("/booking/{bookingId}", async (string bookingId, HttpRequest request)
 
 }).WithName("UpdateBooking").WithOpenApi();
 
+app.MapDelete("/booking/{bookingID}", (string bookingId) => // Delete a booking with id
+{
 
+    connectToDB();
+
+    string query = $"DELETE from Bookings WHERE BookingID ='{bookingId}';";
+
+    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+    try
+    {
+        var returnedFromDB = cmd.ExecuteScalar();
+    }
+    catch
+    {
+        Debug.WriteLine("Some error in sql statement");
+    }
+
+    try { conn.Close(); }
+    catch
+    {
+        string e = "Could not close. Database error contact administrator";
+        Debug.WriteLine(e);
+    }
+
+}).WithName("DeleteBooking").WithOpenApi();
+
+#endregion
 
 
 #region Random devellopment test
+
+/*
 
 //--------------------------------------//
 // - - - - - Test calls below - - - - - //
@@ -401,6 +399,7 @@ app.MapGet("/today", () =>
 })
 .WithName("GetTodayDate")
 .WithOpenApi();
+*/
 
 #endregion
 
