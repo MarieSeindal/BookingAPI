@@ -1,8 +1,8 @@
 ﻿namespace BookingAPI.Model
 {
-    public class Booking
+    public class BookingDTO
     {
-        public Booking(string id, string userId, string title, DateTime startDate, DateTime endDate,bool allDay, int roomId, string description)
+        public BookingDTO(string id, string userId, string title, DateTime startDate, DateTime endDate,bool allDay, int roomId, string description)
         {
             Id = id;
             UserId = userId;

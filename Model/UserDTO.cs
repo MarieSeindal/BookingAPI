@@ -1,8 +1,8 @@
 ﻿namespace BookingAPI.Model
 {
-    public class User
+    public class UserDTO
     {
-        public User(string userId, string lastName, string firstName, string password, bool isAdmin)
+        public UserDTO(string userId, string lastName, string firstName, string password, bool isAdmin)
         {
             UserId = userId;
             LastName = lastName;

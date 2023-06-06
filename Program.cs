@@ -56,7 +56,7 @@ app.UseCors(x =>
 
 app.MapPost("/user", async (HttpRequest request) => // Add user
 {
-    var user = await request.ReadFromJsonAsync<User>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
+    var user = await request.ReadFromJsonAsync<UserDTO>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
     // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
 
     connectToDB();
@@ -89,7 +89,7 @@ app.MapGet("/user", () => // Get all users
 
     string query = "SELECT * FROM Users;";
     MySqlCommand cmd = new MySqlCommand(query, conn);
-    List<User> users = new List<User>();
+    List<UserDTO> users = new List<UserDTO>();
 
     try
     {
@@ -98,7 +98,7 @@ app.MapGet("/user", () => // Get all users
 
         while (reader.Read())
         {
-            var tempUser = new User("","","","",false);
+            var tempUser = new UserDTO("","","","",false);
 
             tempUser.UserId = reader["UserID"].ToString() ?? "N/A";
             tempUser.LastName = reader["LastName"].ToString() ?? "N/A";
@@ -179,7 +179,7 @@ app.MapGet("/user/permission/{userId}", (string userId) => // Get permision for 
 
 app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => // Post a booking to a user
 {
-    var booking = await request.ReadFromJsonAsync<Booking>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
+    var booking = await request.ReadFromJsonAsync<BookingDTO>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
     // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
 
     connectToDB();
@@ -219,7 +219,7 @@ app.MapGet("/booking/{userId}", (string userId) => // Get all bookings for a use
 
     string query = $"SELECT * FROM Bookings where UserID = '{userId}';";
     MySqlCommand cmd = new MySqlCommand(query, conn);
-    List<Booking> bookings = new List<Booking>();
+    List<BookingDTO> bookings = new List<BookingDTO>();
 
     try
     {
@@ -230,7 +230,7 @@ app.MapGet("/booking/{userId}", (string userId) => // Get all bookings for a use
         while (reader.Read())
         {
 
-            var tempBooking = new Booking("", "", "", DateTime.Now, DateTime.Now, false, 0, ""); // just temp data
+            var tempBooking = new BookingDTO("", "", "", DateTime.Now, DateTime.Now, false, 0, ""); // just temp data
 
             tempBooking.Id = reader["BookingID"].ToString() ?? "N/A";
             tempBooking.UserId = reader["UserID"].ToString() ?? "N/A";
@@ -264,7 +264,7 @@ app.MapGet("/booking/{userId}", (string userId) => // Get all bookings for a use
 
 app.MapPut("/booking/{bookingId}", async (string bookingId, HttpRequest request) => // Post a booking to a user
 {
-    var b = await request.ReadFromJsonAsync<Booking>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
+    var b = await request.ReadFromJsonAsync<BookingDTO>(); //sql is executed ok, but it returns null to service. Make a function to generate guid in service?
     // person.Id = userId; I dont need the person object to function, as data is being put intoo insert statement.
 
     connectToDB();
