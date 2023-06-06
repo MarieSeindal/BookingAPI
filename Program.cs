@@ -213,6 +213,12 @@ app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => /
 
 app.MapGet("/booking/{userId}", (string userId) => // Get all bookings for a user
 {
+    TimeZoneInfo est = null;
+    try
+    {
+        est = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    } catch { Debug.WriteLine("Time zone not found"); }
+
     connectToDB();
 
 
@@ -236,7 +242,9 @@ app.MapGet("/booking/{userId}", (string userId) => // Get all bookings for a use
             tempBooking.UserId = reader["UserID"].ToString() ?? "N/A";
             tempBooking.Title = reader["Title"].ToString() ?? "";
             tempBooking.StartDate = (DateTime)reader["StartDate"];
+            tempBooking.StartDate = tempBooking.StartDate.ToLocalTime();
             tempBooking.EndDate = (DateTime)reader["EndDate"];
+            tempBooking.EndDate = tempBooking.EndDate.ToLocalTime();
             tempBooking.AllDay = (bool)reader["AllDay"]; // Booleans are saved as 0=false and nonZero=true
             tempBooking.RoomId = (int)reader["LocationID"];
             tempBooking.Description = reader["Description"].ToString() ?? "";
