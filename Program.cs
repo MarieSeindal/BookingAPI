@@ -81,7 +81,7 @@ app.MapPost("/user", async (HttpRequest request) => // Add user
 
     // return Results.Ok("User created"); // !!!!!!!!!!!!!!!!!!!!!!!!! Skal pakke sind logik om det lykkedes eller ej
 
-}).WithName("PostUser").WithOpenApi();
+}).WithName("PostUser").WithOpenApi().Accepts<UserDTO>("application/json");
 
 app.MapGet("/user", () => // Get all users
 {
@@ -209,7 +209,7 @@ app.MapPost("/booking/{userId}", async (string userId, HttpRequest request) => /
         Debug.WriteLine(e);
     }
 
-}).WithName("PostBooking").WithOpenApi();
+}).WithName("PostBooking").WithOpenApi().Accepts<BookingDTO>("application/json");
 
 app.MapGet("/booking/{userId}", (string userId) => // Get all bookings for a user
 {
@@ -305,7 +305,7 @@ app.MapPut("/booking/{bookingId}", async (string bookingId, HttpRequest request)
     }
 
 
-}).WithName("UpdateBooking").WithOpenApi();
+}).WithName("UpdateBooking").WithOpenApi().Accepts<BookingDTO>("application/json");
 
 app.MapDelete("/booking/{bookingID}", (string bookingId) => // Delete a booking with id
 {
