@@ -337,80 +337,6 @@ app.MapDelete("/booking/{bookingID}", (string bookingId) => // Delete a booking 
 #endregion
 
 
-#region Random devellopment test
-
-/*
-
-//--------------------------------------//
-// - - - - - Test calls below - - - - - //
-//--------------------------------------//
-
-app.MapGet("/users/{userId}/books/{bookId}", (int userId, int bookId) => 
-    $"The user id is {userId} and book id is {bookId}. Then you cna create and sql insert statement with these parameters {userId} and {bookId}"
-);
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () => 
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast") 
-.WithOpenApi();
-
-app.MapGet("/person1", () => 
-{
-    conn.Open();
-
-    string query = "select * from Persons where PersonID = 1";
-    MySqlCommand cmd = new MySqlCommand(query, conn);
-    MySqlDataReader reader = cmd.ExecuteReader();
-
-    var person = new Person(0,"","");
-
-    while (reader.Read())
-    {
-        var test1 = reader["PersonID"];
-        var test2 = reader["LastName"];
-        var test3 = reader["FirstName"];
-
-        var castIDK = (int)test1;
-
-        person.Id = (int)test1;
-        person.LName = test2.ToString() ?? "No last name";
-        person.FName = test3.ToString() ?? "No first name";
-
-    }
-    conn.Close();
-
-    return (person);
-
-})
-.WithName("GetPerson1")
-.WithOpenApi();
-
-app.MapGet("/today", () =>
-{
-    var today = new Today();
-    return today.dateToday();
-})
-.WithName("GetTodayDate")
-.WithOpenApi();
-*/
-
-#endregion
-
 app.Run();
 
 
@@ -455,7 +381,3 @@ string getConnectionString()
 
 }
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
